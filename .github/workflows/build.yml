@@ -1,0 +1,31 @@
+name: Build firmware
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-dev
+          rustup target add thumbv7em-none-eabihf
+          rustup component add llvm-tools
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+            keyboard/target
+            dongle/target
+          key: cargo-${{ hashFiles('keyboard/Cargo.lock', 'dongle/Cargo.lock') }}
+      - name: Install cargo-hex-to-uf2
+        run: command -v cargo-hex-to-uf2 || cargo install cargo-hex-to-uf2
+      - name: Build
+        run: ./build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: firmware/*.uf2

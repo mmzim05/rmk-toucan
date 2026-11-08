@@ -1,0 +1,68 @@
+[package]
+name = "toucan-dongle"
+version = "0.1.0"
+description = "RMK USB dongle for the Toucan, on a XIAO nRF52840"
+edition = "2024"
+license = "MIT"
+
+[[bin]]
+name = "dongle"
+path = "src/main.rs"
+test = false
+bench = false
+
+[dependencies]
+# Same RMK revision as ../keyboard. `vial` must match the keyboard so the
+# dongle relays Vial to it.
+rmk = { git = "https://github.com/rmk-rs/rmk", rev = "6c89c4ba16b8000dca765962b6e18341de76cb2e", default-features = false, features = [
+    "defmt",
+    "storage",
+    "vial",
+    "dongle",
+    "nrf52840_ble",
+    "adafruit_bl",
+] }
+
+embassy-executor = { version = "0.10", features = ["defmt", "platform-cortex-m", "executor-thread"] }
+embassy-nrf = { version = "0.11", features = [
+    "defmt",
+    "nrf52840",
+    "time-driver-rtc1",
+    "gpiote",
+    "unstable-pac",
+    "time",
+] }
+embassy-time = { version = "0.5", features = ["tick-hz-32_768", "defmt", "defmt-timestamp-uptime"] }
+nrf-mpsl = { git = "https://github.com/alexmoon/nrf-sdc", rev = "9cf87fa7883b89b2d4dc7cd94864da7927bd858c", features = [
+    "defmt",
+    "critical-section-impl",
+    "nrf52840",
+] }
+nrf-sdc = { git = "https://github.com/alexmoon/nrf-sdc", rev = "9cf87fa7883b89b2d4dc7cd94864da7927bd858c", features = [
+    "defmt",
+    "peripheral",
+    "central",
+    "nrf52840",
+] }
+
+bt-hci = { version = "0.11", features = ["defmt"] }
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.5"
+defmt = "1"
+defmt-rtt = "1"
+static_cell = "2"
+
+[profile.dev]
+codegen-units = 1
+debug = true
+opt-level = 1
+overflow-checks = true
+lto = false
+panic = "unwind"
+
+[profile.release]
+codegen-units = 1
+debug = true
+opt-level = "z"
+overflow-checks = false
+lto = "fat"

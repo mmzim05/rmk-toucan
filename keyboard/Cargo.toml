@@ -1,0 +1,85 @@
+[package]
+name = "toucan"
+version = "0.1.0"
+description = "RMK firmware for the beekeeb Toucan split keyboard"
+edition = "2024"
+license = "MIT"
+
+# The left half is the split central: it holds the keymap, drives the display
+# and talks to the dongle (or a BLE/USB host). The right half carries the
+# Cirque trackpad and forwards keys and motion to the left.
+[[bin]]
+name = "central"
+path = "src/central.rs"
+test = false
+bench = false
+
+[[bin]]
+name = "peripheral"
+path = "src/peripheral.rs"
+test = false
+bench = false
+
+[dependencies]
+rmk = { git = "https://github.com/rmk-rs/rmk", rev = "6c89c4ba16b8000dca765962b6e18341de76cb2e", features = [
+    "nrf52840_ble",
+    "split",
+    "dongle",
+    "display",
+    "async_matrix",
+    "adafruit_bl",
+] }
+
+embassy-executor = { version = "0.10", features = ["defmt", "platform-cortex-m", "executor-thread"] }
+embassy-nrf = { version = "0.11", features = [
+    "defmt",
+    "nrf52840",
+    "time-driver-rtc1",
+    "gpiote",
+    "unstable-pac",
+    "nfc-pins-as-gpio",
+    "time",
+] }
+embassy-time = { version = "0.5", features = ["tick-hz-32_768", "defmt", "defmt-timestamp-uptime"] }
+nrf-mpsl = { git = "https://github.com/alexmoon/nrf-sdc", rev = "9cf87fa7883b89b2d4dc7cd94864da7927bd858c", features = [
+    "defmt",
+    "critical-section-impl",
+    "nrf52840",
+] }
+nrf-sdc = { git = "https://github.com/alexmoon/nrf-sdc", rev = "9cf87fa7883b89b2d4dc7cd94864da7927bd858c", features = [
+    "defmt",
+    "peripheral",
+    "central",
+    "nrf52840",
+] }
+
+bt-hci = { version = "0.11", features = ["defmt"] }
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.5"
+defmt = "1"
+defmt-rtt = "1"
+panic-probe = { version = "1", features = ["print-defmt"] }
+static_cell = "2"
+embedded-hal = "1.0"
+embedded-hal-async = "1.0"
+embedded-graphics = "0.8"
+
+[build-dependencies]
+const-gen = "1.6"
+json = "0.12"
+xz2 = "0.1.7"
+
+[profile.dev]
+codegen-units = 1
+debug = true
+opt-level = 1
+overflow-checks = true
+lto = false
+panic = "unwind"
+
+[profile.release]
+codegen-units = 1
+debug = true
+opt-level = "z"
+overflow-checks = false
+lto = "fat"
